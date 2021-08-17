@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16.6.2-alpine3.14@sha256:a13b194295eba881f60ea21d8a8686489e5cdf67b2212812359a986032714a6e
 
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
@@ -87,8 +87,13 @@ RUN find /bin /etc /lib /sbin /usr -xdev -type l -exec test ! -e {} \; -delete
 RUN npm install npm@latest -g
 
 # add-in post installation file for permissions
-COPY post-install.sh $APP_DIR/
-RUN chmod 500 $APP_DIR/post-install.sh
+COPY post-install.sh /usr/local/bin/
+RUN chmod 500 /usr/local/bin/post-install.sh
+
+# ON Build for convenience
+ONBUILD ADD . ${APP_DIR}
+ONBUILD RUN npm install
+ONBUILD RUN /post-install.sh
 
 # default directory is /app
 WORKDIR $APP_DIR
